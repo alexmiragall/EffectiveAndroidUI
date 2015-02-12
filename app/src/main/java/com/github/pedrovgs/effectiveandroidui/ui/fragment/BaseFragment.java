@@ -17,11 +17,14 @@ package com.github.pedrovgs.effectiveandroidui.ui.fragment;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import butterknife.ButterKnife;
+
 import com.github.pedrovgs.effectiveandroidui.ui.activity.BaseActivity;
 
 /**
@@ -30,46 +33,61 @@ import com.github.pedrovgs.effectiveandroidui.ui.activity.BaseActivity;
  * common to every fragment.
  *
  * @author Pedro Vicente Gómez Sánchez
+ *
+ * @author Alex Miragall Arnal
  */
 public abstract class BaseFragment extends Fragment {
 
-  @Override public void onAttach(Activity activity) {
-    super.onAttach(activity);
-    injectDependencies();
-  }
+    private boolean injected = false;
 
-  @Override public View onCreateView(LayoutInflater inflater, ViewGroup container,
-      Bundle savedInstanceState) {
-    return inflater.inflate(getFragmentLayout(), container, false);
-  }
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        injected = false;
+        injectDependencies();
+    }
 
-  @Override public void onViewCreated(View view, Bundle savedInstanceState) {
-    super.onViewCreated(view, savedInstanceState);
-    injectViews(view);
-  }
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        return inflater.inflate(getFragmentLayout(), container, false);
+    }
 
-  /**
-   * Every fragment has to inflate a layout in the onCreateView method. We have added this method to
-   * avoid duplicate all the inflate code in every fragment. You only have to return the layout to
-   * inflate in this method when extends BaseFragment.
-   */
-  protected abstract int getFragmentLayout();
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        injectViews(view);
+    }
 
-  /**
-   * Replace every field annotated using @Inject annotation with the provided dependency specified
-   * inside a Dagger module value.
-   */
-  private void injectDependencies() {
-    ((BaseActivity) getActivity()).inject(this);
-  }
+    /**
+     * Every fragment has to inflate a layout in the onCreateView method. We have added this method to
+     * avoid duplicate all the inflate code in every fragment. You only have to return the layout to
+     * inflate in this method when extends BaseFragment.
+     */
+    protected abstract int getFragmentLayout();
 
-  /**
-   * Replace every field annotated with ButterKnife annotations like @InjectView with the proper
-   * value.
-   *
-   * @param view to extract each widget injected in the fragment.
-   */
-  private void injectViews(final View view) {
-    ButterKnife.inject(this, view);
-  }
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        injectDependencies();
+    }
+
+    /**
+     * Replace every field annotated using @Inject annotation with the provided dependency specified
+     * inside a Dagger module value.
+     */
+    private void injectDependencies() {
+        if (!injected)
+            injected = ((BaseActivity) getActivity()).inject(this);
+    }
+
+    /**
+     * Replace every field annotated with ButterKnife annotations like @InjectView with the proper
+     * value.
+     *
+     * @param view to extract each widget injected in the fragment.
+     */
+    private void injectViews(final View view) {
+        ButterKnife.inject(this, view);
+    }
 }

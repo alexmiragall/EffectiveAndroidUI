@@ -29,6 +29,8 @@ import java.util.List;
  * common to every activity.
  *
  * @author Pedro Vicente Gómez Sánchez
+ *
+ * @author Alex Miragall Arnal
  */
 public abstract class BaseActivity extends ActionBarActivity {
 
@@ -37,7 +39,6 @@ public abstract class BaseActivity extends ActionBarActivity {
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     injectDependencies();
-    injectViews();
   }
 
   /**
@@ -46,8 +47,13 @@ public abstract class BaseActivity extends ActionBarActivity {
    *
    * @param object to inject.
    */
-  public void inject(Object object) {
-    activityScopeGraph.inject(object);
+  public boolean inject(Object object) {
+      if(activityScopeGraph != null) {
+          activityScopeGraph.inject(object);
+          return true;
+      }
+      else
+          return false;
   }
 
   /**
